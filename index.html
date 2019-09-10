@@ -1,0 +1,163 @@
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <style>
+ body {
+  font-family: Arial, Helvetica, sans-serif;
+  color:palevioletred;
+  background-color: black;
+  
+}
+* {box-sizing: border-box;}
+
+/* The popup chat - hidden by default */
+.chat-popup {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  right: 15px;
+  border: 3px solid #f1f1f1;
+  z-index: 9;
+}
+
+/* Add styles to the form container */
+.form-container {
+  max-width: 300px;
+  padding: 10px;
+  background-color: white;
+}
+
+/* Set a style for the submit/send button */
+.form-container .btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom:10px;
+  opacity: 0.8;
+}
+
+/* Add some hover effects to buttons */
+.form-container .btn:hover, .open-button:hover {
+  opacity: 1;
+}
+#jumbotron{
+  background-image: url("https://cdn.shopify.com/s/files/1/1746/3259/files/Photo_13-01-2018_22_08_10_grande.jpg?v=1515848994");
+  height: 30%;
+}
+#m{
+  height: 10%;
+}
+#divUsername{
+  margin-top: 10%;
+  text-align: center;
+}
+#ok{
+  background-color:palevioletred;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  width: 30%;
+  margin-bottom:10px;
+  opacity: 0.8;
+}
+#usn{
+  width: 30%;
+  padding: 15px 32px;
+  margin-bottom:10px;
+}
+#col1 ,#col2{
+  text-align: center;
+}
+ul{
+  text-align: center;
+}
+
+</style>
+  </head>
+  <body>
+    <div id= "jumbotron" class="jumbotron text-center">
+        <h1>CHATBOX</h1>   
+    </div>
+    <div id="divUsername">
+        <h1>Enter a Username : </h1>
+        <br><br>
+        <input id="usn" autocomplete ="off" required>
+        <br><br>
+        <button id ="ok"clas="btn">Ok</button>
+    </div>
+    
+    
+    <div id ="col1"class="col-sm-6">
+      <input type ="button" class ="btn" value = "MESSAGES">
+      <ul id="messages"></ul>
+    </div>
+
+    <div id ="col2"class="col-sm-6">
+        <input type ="button" class ="btn" value = "ONLINE">
+        <ul id="online"></ul>
+      </div>
+    
+
+    <div class="chat-popup" id="myForm">
+      <form action="" class="form-container">
+        <h1>Chat</h1>
+        <label for="msg"><b>Message</b></label>
+        <input  id="m" autocomplete="off" >
+
+        <button class="btn">Send</button>
+      </form>
+    </div>
+
+    
+        
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+    $(function () {
+      var socket = io();
+      
+      $("#col1").hide();
+      $("#col2").hide();
+      $("#myForm").hide();
+      $("#ok").click(function(){
+        var username = $("#usn").val();
+        $("#online").append(username);
+        window.scrollTo(0, document.body.scrollHeight);
+
+        $("#divUsername").hide();
+        $("#col1").show();
+        $("#col2").show();
+        $("#myForm").show();
+
+      
+        
+        $('form').submit(function(){
+          socket.emit('chat message', $('#m').val());
+          $('#m').val('');
+          return false;
+        });
+        socket.on('chat message', function(msg){
+          var user = username + " : " + msg;
+          $('#messages').append($('<li>').text(user));
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+      });
+
+    })
+    //document.getElementById("myForm").style.display = "block";
+      
+
+    
+    
+    </script>
+  </body>
+</html>
