@@ -1,0 +1,146 @@
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id= "jumbotron" class="jumbotron text-center">
+        <h1>Welcome to</h1>
+        <h1><b>ChatApp</b></h1>   
+    </div>
+    <div class="container">
+
+      <div id="userFormArea" class="row">
+        <div class="col-md-12"> 
+          <form id="userForm">
+            <div class="form-group">
+              <label>Enter a NickName:</label>
+              <input class="form-control" id="username">
+              <br>
+              <input id = "ok" type="submit" class="btn btn-primary" value="Ok">
+            </div>
+          </form>
+        </div>
+      </div>
+  
+      <div class="row">
+        <div class="col-md-4">
+          <div class="well">
+            <h3>Online Users</h3>
+            <ul class="list-group" id="users"></ul>
+          </div>
+        </div>
+        <div class="col-md-8" id= "divmessages">       
+         <h1>Messages:</h1>
+         <p id ="status"></p>
+      </div>
+    </div>
+
+    <div class="chat-popup" id="chat">
+      <form id="messageForm" class="form-container">
+        <h1>Chat</h1>
+        
+        <label for="msg"><b>Enter a Message</b></label>
+        <input type="text" class="form-control" id="message">
+        <br>
+        <input id = "send" type="submit" class="btn btn-primary" value="Send Message">
+      </form>
+    </div>
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+    $(function() {
+			var socket = io.connect();
+			var messageForm = $('#messageForm');
+			var message = $('#message');
+			var userFormArea = $('#userFormArea');
+			var userForm = $('#userFormArea');
+			var users = $('#users');
+      var username = $('#username');
+      var messages = $('#divmessages');
+      var status = $('#status');
+      var jumbotron=$('#jumbotron');
+      var name;
+  
+
+      $(".well").hide();
+      $(messages).hide();
+
+
+      
+
+      message.bind("keypress", () =>{
+        socket.emit('typing')
+       
+      })
+
+      socket.on('typing', (data) =>{
+        $(message).val(data.username+" is typing...");
+      })
+
+      
+     
+
+			messageForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('send message', message.val());
+				message.val('');
+        return false;
+        
+			});
+
+			socket.on('new message', function(data){
+        if (data.user == name ) {  
+          messages.append('<div class = "alert alert-info"><strong>'+data.user+'</strong>: '+data.msg+'</div>')
+        } else {
+          messages.append('<div class = "alert alert-warning"><strong>'+data.user+'</strong>: '+data.msg+'</div>')
+          
+        }
+        
+      });
+
+			userForm.submit(function(e){
+        name= username.val();
+        e.preventDefault();
+				socket.emit('new user', username.val(),function(data){
+						if(data){
+							userFormArea.hide();
+              $(".chat-popup").show();
+              $(".well").show();
+              $(messages).show();
+              $(jumbotron).css('height' , '30%'); 
+            }
+            username.val('');
+				});
+				
+      });
+      
+
+      socket.on('join chat', function(broadcast){
+        messages.append('<p>'+broadcast+ '</p>');
+      })
+
+			socket.on('get users' , function(data){
+				var html = "";
+				for(i = 0; i < data.length; i++){
+					html += '<li class = "list-group-item">'+data[i]+'</li>';
+				}
+				users.html(html);
+      });
+      
+      socket.on('user left' ,(data) => {
+        if(data.username != name && data.username != null){
+          messages.append('<p>'+data.username+' left the chat.'+'</p>')
+          
+        }
+      })
+		});
+      
+    
+    </script>
+  </body>
+</html>
